@@ -23,6 +23,7 @@
 hs_err_pid*
 
 HELP.md
+.mvn/
 lib/
 target/
 !.mvn/wrapper/maven-wrapper.jar
