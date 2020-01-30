@@ -29,14 +29,6 @@ public class BillController {
     @PostMapping(value = "/v1/bill", produces = "application/json")
     public String createBill(HttpServletRequest request, HttpServletResponse response, @RequestBody Bill bill) throws UnsupportedEncodingException {
 
-        String authorization = request.getHeader("Authorization");
-        String token = authorization.substring(6);
-        Base64.Decoder decoder = Base64.getDecoder();
-        String usernameAndPassword = new String(decoder.decode(token), "UTF-8");
-        String uAndp[] = usernameAndPassword.split("[:]");
-        String username = uAndp[0];
-        User tokenUser = iUserService.findUserByEmail(username);
-
         if (bill.getVendor() == null || bill.getBill_date() == null ||
                 bill.getDue_date() == null || bill.getAmount_due() < 0.01 ||
                 bill.getCategories() == null || bill.getPaymentStatus() == null) {
@@ -48,6 +40,15 @@ public class BillController {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             return "Illegal bill content.";
         }
+
+        String authorization = request.getHeader("Authorization");
+        String token = authorization.substring(6);
+        Base64.Decoder decoder = Base64.getDecoder();
+        String usernameAndPassword = new String(decoder.decode(token), "UTF-8");
+        String uAndp[] = usernameAndPassword.split("[:]");
+        String username = uAndp[0];
+        User tokenUser = iUserService.findUserByEmail(username);
+
         if (bill.getCreated_ts() != null) {
             bill.setCreated_ts(null);
         }
@@ -114,6 +115,12 @@ public class BillController {
     @GetMapping(value = "/v1/bill/{id}", produces = "application/json")
     public String getBill(HttpServletRequest request, HttpServletResponse response, @PathVariable(name = "id") String id) throws UnsupportedEncodingException {
 
+        Bill bill = iBillService.findById(id);
+        if (bill == null) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return "Bill do not exist.";
+        }
+
         String authorization = request.getHeader("Authorization");
         String token = authorization.substring(6);
         Base64.Decoder decoder = Base64.getDecoder();
@@ -122,11 +129,6 @@ public class BillController {
         String username = uAndp[0];
         User tokenUser = iUserService.findUserByEmail(username);
 
-        Bill bill = iBillService.findById(id);
-        if (bill == null) {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            return "Bill do not exist.";
-        }
         if (!bill.getOwner_id().equals(tokenUser.getId())) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return "Request refused. This bill does not owned by you.";
