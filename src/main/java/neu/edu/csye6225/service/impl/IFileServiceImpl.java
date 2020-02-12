@@ -65,6 +65,8 @@ public class IFileServiceImpl implements IFileService {
 
     @Override
     public void deleteFile(File file) {
+        java.io.File localFile = new java.io.File(file.getUrl());
+        localFile.delete();
         fileDao.delete(file);
     }
 }
