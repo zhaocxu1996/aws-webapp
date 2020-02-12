@@ -9,8 +9,8 @@ jobs:
       - run: 
           name: Gradle build
           command: |
-            echo "Hello World!"
-#            exit 1
+#            echo "Hello World!"
+#            run test
   build:
     docker:
       - image: circleci/openjdk:8-jdk
@@ -19,7 +19,8 @@ jobs:
       - run:
           name: Gradle build
           command: |
-            echo "Hello World!"
+            java -jar '/home/zhaocxu/webapp/webapp/target/webapp-0.0.1-SNAPSHOT.jar'
+
 
 
 workflows:
