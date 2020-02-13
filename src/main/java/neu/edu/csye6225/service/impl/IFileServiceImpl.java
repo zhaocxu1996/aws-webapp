@@ -9,6 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -68,5 +69,22 @@ public class IFileServiceImpl implements IFileService {
         java.io.File localFile = new java.io.File(file.getUrl());
         localFile.delete();
         fileDao.delete(file);
+    }
+
+    @Override
+    public List<File> findAllByBillId(String billId) {
+        List<File> files = fileDao.findAll();
+        List<File> targetList = new ArrayList<>();
+        String filePath = "/home/zhaocxu/tmp/";
+        for (File file : files) {
+            java.io.File localFile = new java.io.File(file.getUrl());
+            String uniqueFileName = localFile.getName();
+            int position = uniqueFileName.indexOf("_");
+            String targetBillId = uniqueFileName.substring(0, position);
+            if (targetBillId.equals(billId)) {
+                targetList.add(file);
+            }
+        }
+        return targetList;
     }
 }
