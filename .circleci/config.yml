@@ -9,7 +9,7 @@ jobs:
       - run: 
           name: Gradle build
           command: |
-            mvn test
+            java -jar 'target/webapp-0.0.1-SNAPSHOT.jar'
   build:
     docker:
       - image: circleci/openjdk:8-jdk
