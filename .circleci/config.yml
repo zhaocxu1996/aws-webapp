@@ -4,12 +4,18 @@ jobs:
   pr_check:
     docker:
       - image: circleci/openjdk:8-jdk
+      - image: circleci/mysql:8.0.17
+        environment:
+          MYSQL_ROOT_PASSWORD: 12345678
+          MYSQL_DATABASE: v1
+          MYSQL_USER: root
+          MYSQL_PASSWORD: 12345678
     steps:
       - checkout # check out source code to working directory
       - run: 
           name: Gradle build
           command: |
-            java -jar 'target/webapp-0.0.1-SNAPSHOT.jar'
+            mvn test
   build:
     docker:
       - image: circleci/openjdk:8-jdk
@@ -18,7 +24,7 @@ jobs:
       - run:
           name: Gradle build
           command: |
-            java -jar 'target/webapp-0.0.1-SNAPSHOT.jar'
+            mvn build
 
 
 
