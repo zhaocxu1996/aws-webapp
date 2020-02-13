@@ -3,8 +3,10 @@ package neu.edu.csye6225.controller;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import neu.edu.csye6225.entity.Bill;
+import neu.edu.csye6225.entity.File;
 import neu.edu.csye6225.entity.User;
 import neu.edu.csye6225.service.IBillService;
+import neu.edu.csye6225.service.IFileService;
 import neu.edu.csye6225.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +27,8 @@ public class BillController {
     IUserService iUserService;
     @Autowired
     IBillService iBillService;
+    @Autowired
+    IFileService iFileService;
 
     @PostMapping(value = "/v1/bill", produces = "application/json")
     public String createBill(HttpServletRequest request, HttpServletResponse response, @RequestBody Bill bill) throws UnsupportedEncodingException {
@@ -219,6 +223,10 @@ public class BillController {
             return "Request refused. This bill does not owned by you.";
         }
 
+        List<File> files = iFileService.findAllByBillId(id);
+        for (File file : files) {
+            iFileService.deleteFile(file);
+        }
         iBillService.deleteById(id);
         response.setStatus(HttpServletResponse.SC_NO_CONTENT);
         return "Delete bill successfully";
