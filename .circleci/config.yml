@@ -9,8 +9,7 @@ jobs:
       - run: 
           name: Gradle build
           command: |
-            echo "Hello World!"
-#            exit 1
+            java -jar 'target/webapp-0.0.1-SNAPSHOT.jar'
   build:
     docker:
       - image: circleci/openjdk:8-jdk
@@ -19,7 +18,8 @@ jobs:
       - run:
           name: Gradle build
           command: |
-            echo "Hello World!"
+            java -jar 'target/webapp-0.0.1-SNAPSHOT.jar'
+
 
 
 workflows:
