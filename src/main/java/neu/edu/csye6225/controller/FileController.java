@@ -53,8 +53,15 @@ public class FileController {
         // find if the suffix of file legal
         String fileName = file.getOriginalFilename();
         if (iFileService.findByFilename(fileName) != null) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            return "File already exist.";
+            File exist = iFileService.findByFilename(fileName);
+            java.io.File localFile = new java.io.File(exist.getUrl());
+            String uniqueFileName = localFile.getName();
+            int position = uniqueFileName.indexOf("_");
+            String targetBillId = uniqueFileName.substring(0, position);
+            if (targetBillId.equals(bill.getId())) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                return "File already exist.";
+            }
         }
         String suffix = fileName.substring(fileName.lastIndexOf(".")+1);
         String requirement = "pdf,png,jpg,jpeg";
