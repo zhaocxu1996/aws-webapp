@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface IFileService {
 
-    void attachFile(String billId, MultipartFile file);
+    void attachFile(String billId, MultipartFile file, String suffix);
 
     File findByFilename(String fileName);
 
