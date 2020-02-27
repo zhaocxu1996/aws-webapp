@@ -49,7 +49,6 @@ public class FileController {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return "Request refused. This bill does not owned by you.";
         }
-
         // find if the suffix of file legal
         String fileName = file.getOriginalFilename();
         if (iFileService.findByFilename(fileName) != null) {
