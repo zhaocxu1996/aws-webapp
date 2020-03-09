@@ -6,7 +6,7 @@ jobs:
       - image: circleci/openjdk:8-jdk
       - image: circleci/mysql:8.0.17
         environment:
-          MYSQL_ROOT_PASSWORD: rootpw
+          MYSQL_ROOT_PASSWORD: 12345678
           MYSQL_DATABASE: v1
           MYSQL_USER: user
           MYSQL_PASSWORD: 12345678
