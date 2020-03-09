@@ -23,7 +23,7 @@ public class IFileServiceImpl implements IFileService {
     @Override
     public void attachFile(String billId, MultipartFile file) {
         String file_name = file.getOriginalFilename();
-        String filePath = "/home/zhaocxu/tmp/";
+        String filePath = "/home";
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String upload_date = df.format(new Date());
         String url =  filePath + billId + "_" + file_name;
@@ -75,7 +75,7 @@ public class IFileServiceImpl implements IFileService {
     public List<File> findAllByBillId(String billId) {
         List<File> files = fileDao.findAll();
         List<File> targetList = new ArrayList<>();
-        String filePath = "/home/zhaocxu/tmp/";
+        String filePath = "/home";
         for (File file : files) {
             java.io.File localFile = new java.io.File(file.getUrl());
             String uniqueFileName = localFile.getName();

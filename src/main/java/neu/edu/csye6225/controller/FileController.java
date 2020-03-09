@@ -68,7 +68,7 @@ public class FileController {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             return "Illegal file type.";
         }
-        String filePath = "/home/zhaocxu/tmp/";
+        String filePath = "/home";
 
         iFileService.attachFile(bill.getId(), file);
 
