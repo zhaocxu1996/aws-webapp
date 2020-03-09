@@ -10,21 +10,21 @@ jobs:
           MYSQL_DATABASE: v1
           MYSQL_USER: user
           MYSQL_PASSWORD: 12345678
+#    steps:
+#      - checkout # check out source code to working directory
+#      - run:
+#          name: Gradle build
+#          command: |
+#            mvn test
+#  build:
+#    docker:
+#      - image: circleci/openjdk:8-jdk
     steps:
       - checkout # check out source code to working directory
       - run:
           name: Gradle build
           command: |
-            sudo mvn test
-  build:
-    docker:
-      - image: circleci/openjdk:8-jdk
-    steps:
-      - checkout # check out source code to working directory
-      - run:
-          name: Gradle build
-          command: |
-            sudo mvn build
+            mvn build
 
 
 
