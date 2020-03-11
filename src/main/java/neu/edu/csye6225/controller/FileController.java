@@ -49,29 +49,27 @@ public class FileController {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return "Request refused. This bill does not owned by you.";
         }
-
         // find if the suffix of file legal
         String fileName = file.getOriginalFilename();
-        if (iFileService.findByFilename(fileName) != null) {
-            File exist = iFileService.findByFilename(fileName);
-            java.io.File localFile = new java.io.File(exist.getUrl());
-            String uniqueFileName = localFile.getName();
-            int position = uniqueFileName.indexOf("_");
-            String targetBillId = uniqueFileName.substring(0, position);
-            if (targetBillId.equals(bill.getId())) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                return "File already exist.";
-            }
-        }
+//        if (iFileService.findByFilename(fileName) != null) {
+//            File exist = iFileService.findByFilename(fileName);
+//            java.io.File localFile = new java.io.File(exist.getUrl());
+//            String uniqueFileName = localFile.getName();
+//            int position = uniqueFileName.indexOf("_");
+//            String targetBillId = uniqueFileName.substring(0, position);
+//            if (targetBillId.equals(bill.getId())) {
+//                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+//                return "File already exist.";
+//            }
+//        }
         String suffix = fileName.substring(fileName.lastIndexOf(".")+1);
         String requirement = "pdf,png,jpg,jpeg";
         if(requirement.indexOf(suffix) == -1) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             return "Illegal file type.";
         }
-        String filePath = "/home/zhaocxu/tmp/";
 
-        iFileService.attachFile(bill.getId(), file);
+        iFileService.attachFile(bill.getId(), file, suffix);
 
         File target = iFileService.findByFilename(fileName);
         if (target != null) {
@@ -89,7 +87,7 @@ public class FileController {
     }
 
     @GetMapping(value = "/v1/bill/{billId}/file/{fileId}", produces = "application/json")
-    public String getBill(HttpServletRequest request, HttpServletResponse response, @PathVariable(name = "billId") String billId, @PathVariable(name = "fileId") String fileId) throws UnsupportedEncodingException {
+    public String getFile(HttpServletRequest request, HttpServletResponse response, @PathVariable(name = "billId") String billId, @PathVariable(name = "fileId") String fileId) throws UnsupportedEncodingException {
         Bill bill = iBillService.findById(billId);
         if (bill == null) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -133,7 +131,7 @@ public class FileController {
     }
 
     @DeleteMapping(value = "/v1/bill/{billId}/file/{fileId}", produces = "application/json")
-    public String deleteBill(HttpServletRequest request, HttpServletResponse response, @PathVariable(name = "billId") String billId, @PathVariable(name = "fileId") String fileId) throws UnsupportedEncodingException {
+    public String deleteFile(HttpServletRequest request, HttpServletResponse response, @PathVariable(name = "billId") String billId, @PathVariable(name = "fileId") String fileId) throws UnsupportedEncodingException {
         Bill bill = iBillService.findById(billId);
         if (bill == null) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
