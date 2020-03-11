@@ -22,7 +22,7 @@ public class IFileServiceImplTest {
 
     @Test
     public void findByFilename() {
-        String file_path = "/home/zhaocxu/tmp/";
+        String file_path = "/tmp";
         String billId = "ff8081817017be27017018200a4a0004";
         String file_name = "hawk.jpeg";
         File file = iFileService.findByFilename(file_name);
