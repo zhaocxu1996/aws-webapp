@@ -43,7 +43,7 @@ jobs:
       - run:
           name: Copy Artifact to S3
           command: |
-            aws s3 cp --recursive codedeploy_artifact s3://${CODE_DEPLOY_S3_BUCKET}
+            aws s3 sync ./codedeploy_artifact s3://${S3_CODEDEPLOY_BUCKET}
       - run:
           name: CodeDeploy API call
           command: |
