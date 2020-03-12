@@ -3,7 +3,7 @@ os: linux
 
 files:
   - source: ./target/ROOT.war
-    destination: /var/lib/tomcat7/webapps
+    destination: /home/ubuntu/webapps
 
 hooks:
   AfterInstall:
