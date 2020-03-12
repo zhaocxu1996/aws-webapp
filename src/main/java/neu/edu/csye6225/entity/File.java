@@ -31,7 +31,7 @@ public class File {
      * readOnly: true
      * example: /tmp/file.jpg
      */
-    @Column(length = 1000)
+    @Column(length = 10000)
     private String url;
 
     /**
