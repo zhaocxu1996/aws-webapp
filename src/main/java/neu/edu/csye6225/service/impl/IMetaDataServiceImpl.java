@@ -50,6 +50,7 @@ public class IMetaDataServiceImpl implements IMetaDataService {
         metaData.setType(suffix);
         String localFilePath = LOCAL_DIR + billId + "_" + fileName;
         java.io.File localFile = new File(localFilePath);
+        System.out.println(localFile.getAbsolutePath());
         try {
             file.transferTo(localFile);
         } catch (IOException e) {
@@ -87,6 +88,7 @@ public class IMetaDataServiceImpl implements IMetaDataService {
             s3Client.putObject(request);
             GeneratePresignedUrlRequest urlRequest = new GeneratePresignedUrlRequest(bucketName, fileName);
             URL url = s3Client.generatePresignedUrl(urlRequest);
+            System.out.println(url.toString());
             localFile.delete();
             return url.toString();
         } catch (AmazonServiceException e) {
