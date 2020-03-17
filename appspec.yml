@@ -7,6 +7,6 @@ files:
 
 hooks:
   AfterInstall:
-    - location: ./restartTomcat.sh
+    - location: ./codedeploy/restartTomcat.sh
       timeout: 180
       runas: ubuntu
