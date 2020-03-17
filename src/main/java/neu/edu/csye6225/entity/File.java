@@ -3,6 +3,7 @@ package neu.edu.csye6225.entity;
 import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -30,6 +31,7 @@ public class File {
      * readOnly: true
      * example: /tmp/file.jpg
      */
+    @Column(length = 1000)
     private String url;
 
     /**
