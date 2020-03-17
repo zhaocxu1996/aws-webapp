@@ -2,7 +2,7 @@ version: 0.0
 os: linux
 
 files:
-  - source: ./target/ROOT.war
+  - source: target/ROOT.war
     destination: /home/ubuntu/webapps
 
 hooks:
