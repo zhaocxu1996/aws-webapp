@@ -1,0 +1,12 @@
+version: 0.0
+os: linux
+
+files:
+  - source: target/ROOT.jar
+    destination: /home/ubuntu
+
+hooks:
+  AfterInstall:
+    - location: ./codedeploy/afterInstall.sh
+      timeout: 180
+      runas: ubuntu

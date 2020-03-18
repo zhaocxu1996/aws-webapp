@@ -1,42 +1,57 @@
 ---
 version: 2
 jobs:
-  pr_check:
+  build:
+    filters:
+      branches:
+        only:
+          - master
     docker:
       - image: circleci/openjdk:8-jdk
-      - image: circleci/mysql:8.0.17
-        environment:
-          MYSQL_ROOT_PASSWORD: 12345678
-          MYSQL_DATABASE: v1
-          MYSQL_USER: user
-          MYSQL_PASSWORD: 12345678
-#    steps:
-#      - checkout # check out source code to working directory
-#      - run:
-#          name: Gradle build
-#          command: |
-#            mvn test
-#  build:
-#    docker:
-#      - image: circleci/openjdk:8-jdk
     steps:
-      - checkout # check out source code to working directory
+      - checkout
       - run:
-          name: Gradle build
+          name: Install packages
           command: |
-            mvn package -Dmaven.test.skip=true
-
-
-
-workflows:
-  version: 2
-  pr-check-workflow:
-    jobs:
-    - pr_check
-  build-deploy-workflow:
-    jobs:
-      - build:
-          filters:
-            branches:
-              only:
-                - master
+            sudo apt-get update
+            sudo apt-get install -y python-pip
+            sudo pip install awscli
+      - run:
+          name: Build WAR
+          command: |
+            mvn --version
+            mvn clean package
+            pwd
+            ls -al
+            ls -al target
+      - run:
+          name: Build Deployment Artifact
+          command: |
+            mkdir codedeploy_artifact
+            zip -r csye6225-webapp-${CIRCLE_BUILD_NUM}.zip target/ROOT.jar codedeploy/*.sh appspec.yml
+            pwd
+            ls -al
+            mv csye6225-webapp-${CIRCLE_BUILD_NUM}.zip codedeploy_artifact/
+            ls -al
+            pwd
+            cd codedeploy_artifact
+            pwd
+            ls -al
+            cd ..
+            pwd
+            ls -al
+      - run:
+          name: Copy Artifact to S3
+          command: |
+            aws s3 cp --recursive codedeploy_artifact s3://${S3_CODEDEPLOY_BUCKET}
+      - run:
+          name: CodeDeploy API call
+          command: |
+            aws deploy create-deployment \
+              --region us-east-1 \
+              --output json \
+              --application-name ${CODEDEPLOY_APPLICATION_NAME} \
+              --deployment-config-name CodeDeployDefault.AllAtOnce \
+              --deployment-group-name ${CODEDEPLOY_APPLICATION_DEPLOYMENT_GROUP_NAME} \
+              --description "CSYE6225 - CodeDeploy" \
+              --s3-location bucket=${S3_CODEDEPLOY_BUCKET},key=csye6225-webapp-${CIRCLE_BUILD_NUM}.zip,bundleType=zip

@@ -13,7 +13,7 @@ public class MetaData {
     @Id
     @Column(length = 125)
     private String file_id;
-    private String md5;
+//    private String md5;
     private long size;
     private String type;
 
