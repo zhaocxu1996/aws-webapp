@@ -4,6 +4,7 @@ import com.amazonaws.AmazonServiceException;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.auth.InstanceProfileCredentialsProvider;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
@@ -79,7 +80,8 @@ public class IMetaDataServiceImpl implements IMetaDataService {
         metaDataDao.save(metaData);
         try {
             AmazonS3 s3Client = AmazonS3ClientBuilder.standard().withRegion(region)
-                    .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(awsAccessKey, awsSecretKey)))
+                    .withCredentials(new InstanceProfileCredentialsProvider(false))
+//                    .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(awsAccessKey, awsSecretKey)))
                     .withPathStyleAccessEnabled(true).build();
             PutObjectRequest request = new PutObjectRequest(bucketName, fileName, localFile);
             s3Client.putObject(request);
