@@ -29,10 +29,10 @@ import java.security.NoSuchAlgorithmException;
 @Service
 public class IMetaDataServiceImpl implements IMetaDataService {
 
-    @Value("${aws_access_key}")
-    String awsAccessKey;
-    @Value("${aws_secret_key}")
-    String awsSecretKey;
+//    @Value("${aws_access_key}")
+//    String awsAccessKey;
+//    @Value("${aws_secret_key}")
+//    String awsSecretKey;
     @Value("${bucketName}")
     String bucketName;
     @Value("${region}")
@@ -101,7 +101,8 @@ public class IMetaDataServiceImpl implements IMetaDataService {
     @Override
     public void deleteFile(String objectName) {
         AmazonS3 s3Client = AmazonS3ClientBuilder.standard().withRegion(region)
-                .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(awsAccessKey, awsSecretKey)))
+                .withCredentials(new InstanceProfileCredentialsProvider(false))
+//                .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(awsAccessKey, awsSecretKey)))
                 .build();
         try {
             s3Client.deleteObject(bucketName, objectName);
