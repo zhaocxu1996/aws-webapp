@@ -4,6 +4,7 @@ import com.amazonaws.AmazonServiceException;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.auth.InstanceProfileCredentialsProvider;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
@@ -28,10 +29,10 @@ import java.security.NoSuchAlgorithmException;
 @Service
 public class IMetaDataServiceImpl implements IMetaDataService {
 
-    @Value("${aws_access_key}")
-    String awsAccessKey;
-    @Value("${aws_secret_key}")
-    String awsSecretKey;
+//    @Value("${aws_access_key}")
+//    String awsAccessKey;
+//    @Value("${aws_secret_key}")
+//    String awsSecretKey;
     @Value("${bucketName}")
     String bucketName;
     @Value("${region}")
@@ -49,6 +50,7 @@ public class IMetaDataServiceImpl implements IMetaDataService {
         metaData.setType(suffix);
         String localFilePath = LOCAL_DIR + billId + "_" + fileName;
         java.io.File localFile = new File(localFilePath);
+        System.out.println(localFile.getAbsolutePath());
         try {
             file.transferTo(localFile);
         } catch (IOException e) {
@@ -79,12 +81,14 @@ public class IMetaDataServiceImpl implements IMetaDataService {
         metaDataDao.save(metaData);
         try {
             AmazonS3 s3Client = AmazonS3ClientBuilder.standard().withRegion(region)
-                    .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(awsAccessKey, awsSecretKey)))
+                    .withCredentials(new InstanceProfileCredentialsProvider(false))
+//                    .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(awsAccessKey, awsSecretKey)))
                     .withPathStyleAccessEnabled(true).build();
             PutObjectRequest request = new PutObjectRequest(bucketName, fileName, localFile);
             s3Client.putObject(request);
             GeneratePresignedUrlRequest urlRequest = new GeneratePresignedUrlRequest(bucketName, fileName);
             URL url = s3Client.generatePresignedUrl(urlRequest);
+            System.out.println(url.toString());
             localFile.delete();
             return url.toString();
         } catch (AmazonServiceException e) {
@@ -99,7 +103,8 @@ public class IMetaDataServiceImpl implements IMetaDataService {
     @Override
     public void deleteFile(String objectName) {
         AmazonS3 s3Client = AmazonS3ClientBuilder.standard().withRegion(region)
-                .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(awsAccessKey, awsSecretKey)))
+                .withCredentials(new InstanceProfileCredentialsProvider(false))
+//                .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(awsAccessKey, awsSecretKey)))
                 .build();
         try {
             s3Client.deleteObject(bucketName, objectName);
