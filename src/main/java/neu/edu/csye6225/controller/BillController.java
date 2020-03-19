@@ -81,7 +81,7 @@ public class BillController {
         return data.toString();
     }
 
-    @GetMapping(value = "/v1/bills", produces = "application/json")
+    @GetMapping(value = "/v2/bills", produces = "application/json")
     public String getAllBills(HttpServletRequest request, HttpServletResponse response) throws UnsupportedEncodingException {
 
         String authorization = request.getHeader("Authorization");
