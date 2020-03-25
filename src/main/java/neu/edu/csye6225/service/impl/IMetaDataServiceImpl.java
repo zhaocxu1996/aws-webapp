@@ -2,8 +2,6 @@ package neu.edu.csye6225.service.impl;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.SdkClientException;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.auth.InstanceProfileCredentialsProvider;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
@@ -12,8 +10,8 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import neu.edu.csye6225.dao.MetaDataDao;
 import neu.edu.csye6225.entity.MetaData;
 import neu.edu.csye6225.service.IMetaDataService;
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.tomcat.util.codec.binary.Base64;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -21,13 +19,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.net.URL;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 
 @Service
 public class IMetaDataServiceImpl implements IMetaDataService {
+
+    Logger logger = LoggerFactory.getLogger(IMetaDataServiceImpl.class);
 
 //    @Value("${aws_access_key}")
 //    String awsAccessKey;
@@ -78,6 +75,7 @@ public class IMetaDataServiceImpl implements IMetaDataService {
 //            e.printStackTrace();
 //        }
 //        metaData.setMd5(md5);
+        logger.info("meta data saved.");
         metaDataDao.save(metaData);
         try {
             AmazonS3 s3Client = AmazonS3ClientBuilder.standard().withRegion(region)
@@ -88,7 +86,7 @@ public class IMetaDataServiceImpl implements IMetaDataService {
             s3Client.putObject(request);
             GeneratePresignedUrlRequest urlRequest = new GeneratePresignedUrlRequest(bucketName, fileName);
             URL url = s3Client.generatePresignedUrl(urlRequest);
-            System.out.println(url.toString());
+            logger.info("file uploaded.");
             localFile.delete();
             return url.toString();
         } catch (AmazonServiceException e) {
@@ -107,6 +105,7 @@ public class IMetaDataServiceImpl implements IMetaDataService {
 //                .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(awsAccessKey, awsSecretKey)))
                 .build();
         try {
+            logger.info("remote file deleted.");
             s3Client.deleteObject(bucketName, objectName);
         } catch (AmazonServiceException e) {
             e.printStackTrace();

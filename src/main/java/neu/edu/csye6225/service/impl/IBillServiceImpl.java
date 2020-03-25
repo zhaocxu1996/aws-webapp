@@ -3,6 +3,8 @@ package neu.edu.csye6225.service.impl;
 import neu.edu.csye6225.dao.BillDao;
 import neu.edu.csye6225.entity.Bill;
 import neu.edu.csye6225.service.IBillService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +20,8 @@ import java.util.Optional;
 @Service
 public class IBillServiceImpl implements IBillService {
 
+    Logger logger = LoggerFactory.getLogger(IBillServiceImpl.class);
+
     @Autowired
     BillDao billDao;
 
@@ -30,7 +34,7 @@ public class IBillServiceImpl implements IBillService {
         bill.setUpdated_ts(date);
 
         billDao.save(bill);
-
+        logger.info("bill saved.");
         return bill;
     }
 
@@ -50,8 +54,10 @@ public class IBillServiceImpl implements IBillService {
     public Bill findById(String id) {
         Optional<Bill> billOptional = billDao.findById(id);
         if (billOptional.isPresent()) {
+            logger.info("bill found.");
             return billOptional.get();
         } else {
+            logger.info("bill not exist");
             return null;
         }
     }
@@ -81,11 +87,13 @@ public class IBillServiceImpl implements IBillService {
         String date = df.format(new Date());
         origin.setUpdated_ts(date);
         billDao.save(origin);
+        logger.info("bill updated.");
         return origin;
     }
 
     @Override
     public void deleteById(String id) {
         billDao.deleteById(id);
+        logger.info("bill deleted.");
     }
 }

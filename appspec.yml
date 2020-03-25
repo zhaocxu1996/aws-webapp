@@ -2,8 +2,8 @@ version: 0.0
 os: linux
 
 files:
-  - source: target/ROOT.jar
-    destination: /home/ubuntu
+  - source: /
+    destination: /home/ubuntu/webapp
 
 hooks:
   AfterInstall:
