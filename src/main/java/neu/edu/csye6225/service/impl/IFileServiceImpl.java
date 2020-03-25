@@ -4,18 +4,19 @@ import neu.edu.csye6225.dao.FileDao;
 import neu.edu.csye6225.entity.File;
 import neu.edu.csye6225.service.IFileService;
 import neu.edu.csye6225.service.IMetaDataService;
-import org.apache.tomcat.util.codec.binary.Base64;
-import org.apache.commons.codec.digest.DigestUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Service
 public class IFileServiceImpl implements IFileService {
+
+    Logger logger = LoggerFactory.getLogger(IFileServiceImpl.class);
 
     @Autowired
     FileDao fileDao;
@@ -47,6 +48,7 @@ public class IFileServiceImpl implements IFileService {
 //        target.setMd5(md5);
 //        target.setType(suffix);
         fileDao.save(target);
+        logger.info("file saved.");
 //        java.io.File localFile = new java.io.File(url);
 //        if (!localFile.getParentFile().exists()) {
 //            localFile.getParentFile().mkdir();
@@ -63,9 +65,11 @@ public class IFileServiceImpl implements IFileService {
         List<File> files = fileDao.findAll();
         for (File file : files) {
             if (file.getFile_name().equals(fileName)) {
+                logger.info("file found.");
                 return file;
             }
         }
+        logger.info("fill not found.");
         return null;
     }
 
@@ -73,8 +77,10 @@ public class IFileServiceImpl implements IFileService {
     public File findById(String id) {
         Optional<File> optionalFile = fileDao.findById(id);
         if (optionalFile.isPresent()) {
+            logger.info("file found.");
             return optionalFile.get();
         } else {
+            logger.info("fill not found.");
             return null;
         }
     }
@@ -84,6 +90,7 @@ public class IFileServiceImpl implements IFileService {
 //        java.io.File localFile = new java.io.File(file.getUrl());
 //        localFile.delete();
         iMetaDataService.deleteFile(file.getFile_name());
+        logger.info("file deleted.");
         fileDao.delete(file);
     }
 
@@ -91,7 +98,6 @@ public class IFileServiceImpl implements IFileService {
     public List<File> findAllByBillId(String billId) {
         List<File> files = fileDao.findAll();
         List<File> targetList = new ArrayList<>();
-        String filePath = "/home";
         for (File file : files) {
             java.io.File localFile = new java.io.File(file.getUrl());
             String uniqueFileName = localFile.getName();
