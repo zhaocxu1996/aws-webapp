@@ -80,7 +80,7 @@ public class FileController {
             statsd.recordExecutionTime("file.POST-api",stopWatch.getTotalTimeMillis());
             return "Invalid token.";
         }
-        stopWatch.stop();
+//        stopWatch.stop();
 
         stopWatch.start("sql");
         Bill bill = iBillService.findById(id);
