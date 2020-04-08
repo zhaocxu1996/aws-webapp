@@ -522,7 +522,7 @@ public class BillController {
         statsd.recordExecutionTime("billsdue.GET-sql-2",stopWatch.getLastTaskTimeMillis());
 
         stopWatch.start("api");
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
         List<Bill> dueBills = new ArrayList<>();
         for (Bill bill : allBills) {
             Date duedate = df.parse(bill.getDue_date());
