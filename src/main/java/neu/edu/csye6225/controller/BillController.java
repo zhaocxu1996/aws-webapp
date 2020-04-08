@@ -1,5 +1,8 @@
 package neu.edu.csye6225.controller;
 
+import com.amazonaws.auth.InstanceProfileCredentialsProvider;
+import com.amazonaws.services.sns.AmazonSNS;
+import com.amazonaws.services.sns.AmazonSNSClient;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.timgroup.statsd.NonBlockingStatsDClient;
@@ -14,14 +17,16 @@ import org.mindrot.jbcrypt.BCrypt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.StopWatch;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.UnsupportedEncodingException;
-import java.util.Base64;
-import java.util.List;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * @author zhaocxu
@@ -38,6 +43,9 @@ public class BillController {
     IBillService iBillService;
     @Autowired
     IFileService iFileService;
+
+    @Value("${topicArn}")
+    String TOPIC_ARN;
 
     @PostMapping(value = "/v1/bill", produces = "application/json")
     public String createBill(HttpServletRequest request, HttpServletResponse response, @RequestBody Bill bill) throws UnsupportedEncodingException {
@@ -464,5 +472,103 @@ public class BillController {
         logger.info("Bill deleted.");
         statsd.recordExecutionTime("bill.DELETE-api",stopWatch.getLastTaskTimeMillis());
         return "Delete bill successfully";
+    }
+
+    @GetMapping(value = "/v1/bills/due/{x}", produces = "application/json")
+    public String getBillsDue(HttpServletRequest request, HttpServletResponse response, @PathVariable(name = "x") String x) throws UnsupportedEncodingException, ParseException {
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start("api");
+        statsd.increment("billsdue.GET");
+
+        String authorization = request.getHeader("Authorization");
+        if (authorization == null || authorization.isEmpty() ||
+                !authorization.contains("Basic ") || !authorization.startsWith("Basic ")) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            logger.error("Invalid token.");
+            stopWatch.stop();
+            statsd.recordExecutionTime("billsdue.GET-api",stopWatch.getTotalTimeMillis());
+            return "Invalid token.";
+        } else if (!isNum(x) || Integer.valueOf(x) < 0) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            logger.error("Invalid path variable.");
+            stopWatch.stop();
+            statsd.recordExecutionTime("billsdue.GET-api",stopWatch.getTotalTimeMillis());
+            return "Invalid path variable.";
+        }
+        stopWatch.stop();
+        stopWatch.start("sql");
+        String token = authorization.substring(6);
+        Base64.Decoder decoder = Base64.getDecoder();
+        String usernameAndPassword = new String(decoder.decode(token), "UTF-8");
+        String uAndp[] = usernameAndPassword.split("[:]");
+        String username = uAndp[0];
+        String password = uAndp[1];
+        User user = iUserService.findUserByEmail(username);
+        stopWatch.stop();
+        statsd.recordExecutionTime("billsdue.GET-sql-1",stopWatch.getLastTaskTimeMillis());
+
+        if (user == null || !BCrypt.checkpw(password, user.getPassword())) {
+            stopWatch.start("api");
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            logger.error("Invalid token.");
+            stopWatch.stop();
+            statsd.recordExecutionTime("billsdue.GET-api",stopWatch.getTotalTimeMillis());
+            return "Invalid token.";
+        }
+
+        stopWatch.start("sql");
+        List<Bill> allBills = iBillService.findAllBillsByOwnerId(user.getId());
+        stopWatch.stop();
+        statsd.recordExecutionTime("billsdue.GET-sql-2",stopWatch.getLastTaskTimeMillis());
+
+        stopWatch.start("api");
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        List<Bill> dueBills = new ArrayList<>();
+        for (Bill bill : allBills) {
+            Date duedate = df.parse(bill.getDue_date());
+            Calendar rightNow = Calendar.getInstance();
+            rightNow.setTime(new Date());
+            rightNow.add(Calendar.DAY_OF_YEAR,Integer.valueOf(x));
+            Date duex = rightNow.getTime();
+            if (duedate.before(duex)) {
+                dueBills.add(bill);
+            }
+        }
+        AmazonSNS snsClient = AmazonSNSClient.builder().withRegion("us-east-1")
+                .withCredentials(new InstanceProfileCredentialsProvider(false)).build();
+
+        StringBuffer message = new StringBuffer();
+//        message.append(AWS_REGION);
+//        message.append("|");
+//        message.append(ROUTE53);
+//        message.append("|");
+        message.append(user.getEmail_address());
+        message.append("|");
+
+        JsonArray jsonArray = new JsonArray();
+        for (Bill bill : dueBills) {
+            JsonObject jsonObjectRecipe = new JsonObject();
+            jsonObjectRecipe.addProperty("id", bill.getId());
+            jsonArray.add(jsonObjectRecipe);
+            message.append(bill.getId());
+            message.append("|");
+        }
+        snsClient.publish(TOPIC_ARN, message.toString());
+        logger.info("sns published");
+
+        response.setStatus(HttpServletResponse.SC_OK);
+        logger.info("bills due in " + x + " days got");
+        stopWatch.stop();
+        statsd.recordExecutionTime("billsdue.GET-api", stopWatch.getTotalTimeMillis());
+        return jsonArray.toString();
+    }
+
+    private boolean isNum(String x) {
+        for (char c : x.toCharArray()) {
+            if (!Character.isDigit(c)) {
+                return false;
+            }
+        }
+        return true;
     }
 }
